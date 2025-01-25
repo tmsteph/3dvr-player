@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Multi-Stream Audio</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background: #333;
+      color: #fff;
+      padding: 1rem;
+    }
+    main {
+      padding: 1rem;
+    }
+    .player-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .player {
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .controls {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    button {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ddd;
+    }
+    input {
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>YouTube Multi-Stream Audio Player</h1>
+  </header>
+  <main>
+    <input id="video-url" type="text" placeholder="Enter YouTube video URL" />
+    <button onclick="addPlayer()">Add Stream</button>
+    <div class="player-container" id="player-container"></div>
+  </main>
+
+  <script>
+    // Load YouTube IFrame API
+    let tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+
+    let players = []; // Store references to players
+
+    // Function to add a new player
+    function addPlayer() {
+      const container = document.getElementById('player-container');
+      const urlInput = document.getElementById('video-url');
+      const url = urlInput.value.trim();
+
+      if (!url) return alert("Please enter a YouTube URL.");
+
+      const videoId = getYouTubeVideoId(url);
+      if (!videoId) return alert("Invalid YouTube URL.");
+
+      // Create a container for the new player
+      const playerDiv = document.createElement('div');
+      playerDiv.className = 'player';
+      playerDiv.innerHTML = `
+        <div id="player-${players.length}" class="video"></div>
+        <div class="controls">
+          <button onclick="playVideo(${players.length})">Play</button>
+          <button onclick="pauseVideo(${players.length})">Pause</button>
+          <button onclick="muteVideo(${players.length})">Mute</button>
+          <button onclick="unmuteVideo(${players.length})">Unmute</button>
+        </div>
+      `;
+      container.appendChild(playerDiv);
+
+      // Initialize YouTube player
+      const player = new YT.Player(`player-${players.length}`, {
+        videoId: videoId,
+        playerVars: { controls: 0, modestbranding: 1 },
+      });
+      players.push(player);
+
+      // Clear the input field
+      urlInput.value = '';
+    }
+
+    // Utility function to extract video ID from a YouTube URL
+    function getYouTubeVideoId(url) {
+      const regex = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const match = url.match(regex);
+      return match ? match[1] : null;
+    }
+
+    // Player controls
+    function playVideo(index) {
+      players[index]?.playVideo();
+    }
+
+    function pauseVideo(index) {
+      players[index]?.pauseVideo();
+    }
+
+    function muteVideo(index) {
+      players[index]?.mute();
+    }
+
+    function unmuteVideo(index) {
+      players[index]?.unMute();
+    }
+  </script>
+</body>
+</html>
